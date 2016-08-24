@@ -1,0 +1,130 @@
+<html ng-app="Store">
+	<head>
+		<title>V$tore</title>
+		<link rel="stylesheet" href="./resources/css/bootstrap.min.css">
+		<script src="./resources/js/angular.min.js"></script>
+		<script src="./resources/js/angular-route.min.js"></script>
+		<script>
+			var app = angular.module('Store', ['ngRoute']);
+			app.config(function($routeProvider, $locationProvider){
+				$routeProvider
+				.when('/login', {templateUrl: './login', controller: 'LogIn'})
+				.when('/', {templateUrl: './home', controller: 'Home'})
+				.when('/item/:id', {templateUrl: function(urlattr){return './item/' + urlattr.id;}, controller: 'ItemShow'})
+				.when('/error', {templateUrl: './error'})
+				.otherwise({
+					redirectTo: '/error'
+				});
+			});
+			app.
+			controller('Global', function($scope, $location, $http){
+				$scope.decide = function(){
+					if($scope.accOption === "Login"){
+						$scope.go('/login');
+					} else if($scope.accOption === "Logout"){
+						$http.post('./logout');
+						$scope.change();
+						$scope.username = "";
+					} else{
+						$scope.go('/');
+					}
+				};
+				$scope.change = function(){
+					$http.get('./logged_in').then(function(rep){
+						if(rep.data.logged){
+							$scope.accOption = "Logout";
+							$scope.username = rep.data.username;
+						} else{
+							$scope.accOption = "Login";
+							$scope.username = "";
+						}
+					});
+				};
+				$scope.accOption = "";
+				$scope.change();
+				$scope.go = function(hash){$location.path(hash);};
+			}).
+			controller('Home', function($scope, $http, $location){
+				$scope.items = [];
+				$scope.grabRecent = function(){
+					$http.get('./items/recent').then(function(rep){
+						$scope.items = rep.data;
+						$scope.items.forEach(function(item, i, arr){
+							arr[i].created_at = item.created_at.split('T')[0];
+						});
+					});
+				};
+				$scope.grabRecent();
+			}).
+			controller('LogIn', function($scope, $http){
+				$scope.name = '';
+				$scope.password = '';
+				$scope.submit = function(){
+					$http.post('./login', {username: $scope.username, password: $scope.password}).then(function(rep){
+						rep = rep.data;
+						if(rep.error){
+							alert(rep.error);
+						} else{
+							$scope.$parent.change();
+						}
+					});
+				};
+			}).
+			controller('ItemShow', function($scope, $http, $routeParams){
+				$scope.id = $routeParams.id;
+				$http.get('./api/item/' + $scope.id).then(function(rep){
+					$scope.item = rep.data;
+				});
+			});
+		</script>
+		<style>
+			@font-face{
+				font-family: 'Open Sans';
+				src: url('./resources/fonts/opensans-regular.ttf');
+			}
+			@font-face{
+				font-family: 'Open Sans Light';
+				src: url('./resources/fonts/opensans-light.ttf');
+			}
+			.gvfamily{font-family: 'Open Sans Light';}
+			.gvfamily-bold{font-family: 'Open Sans';}
+			a{text-decoration: none; color: inherit;}
+			a:hover{text-decoration: none; color: green; cursor: pointer;}
+			a:focus{outline: none; text-decoration: none; color: inherit;}
+			/**/
+		</style>
+	</head>
+	<body ng-controller="Global">
+		<div class="container-fluid">
+			<div class="row" style="background-color: #F7F7F9">
+				<div class="row">
+					<nav class="navbar navbar-dark bg-inverse">
+						<a class="navbar-brand gvfamily" href="#/">V$TORE</a>
+						<ul class="nav navbar-nav">
+							<li class="nav-item">
+								<a class="nav-link gvfamily" ng-click="decide()">{{accOption}}</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link gvfamily" href="#">Link</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link gvfamily" href="#">Another link</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link gvfamily">{{username}}</a>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<div class="row" style="padding-top:10px">
+						<h1 class="display-2 gvfamily text-xs-center"><a href="#/">V$TORE</a></h1>
+				</div>
+				<div class="row">
+						<h2 class="gvfamily text-xs-center" href="#/">a virtual online store</h2>
+				</div>
+			</div>
+			<div ng-view>
+			</div>
+		</div>
+	</body>
+</html>

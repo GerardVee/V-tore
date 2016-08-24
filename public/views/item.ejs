@@ -1,0 +1,9 @@
+<div ng-if="item.error">
+	<h1>{{item.error}}</h1>
+</div>
+<div ng-if="!item.error">
+	<h1>{{item.name}}</h1>
+	<div ng-repeat="item in item.related">
+		<div ng-repeat= "(id, name) in item"><a href="#/item/{{id}}">{{name}}</a></div>
+	</div>
+</div>

@@ -1,0 +1,10 @@
+<div class="items">
+	<div ng-repeat="item in items track by $index">
+		<div data-item-id="{{item._id}}">
+			<h1><a href="#/item/{{item._id}}">{{item.name}}</a></h1>
+			<span>${{item.price}}</span>
+			<h4>{{item.description}}</h4>
+			<span>created at: {{item.created_at | date:'longDate'}}</span>
+		</div>
+	</div>
+</div>
